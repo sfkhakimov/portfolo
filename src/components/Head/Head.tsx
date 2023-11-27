@@ -99,7 +99,7 @@ const Head = () => {
               target="_blank"
               className="cursor-pointer text-blue-500 hover:underline "
             >
-              АО "ЕЭТП"
+              АО &ldquo;ЕЭТП&ldquo;
             </a>{' '}
             и разрабатываю фронтенд часть{' '}
             <a
@@ -126,6 +126,7 @@ const Head = () => {
         <div className="mx-auto md:pt-24 pt-12 flex justify-center columns-3 gap-3">
           {socials.map((item) => (
             <a
+              key={item.label}
               href={item.link}
               target="_blank"
               className={`cursor-pointer hover:underline ${item.color}`}
