@@ -1,22 +1,34 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import { Bodies, Engine, Render, World } from 'matter-js'
+import {
+  Bodies,
+  Engine,
+  World,
+  MouseConstraint,
+  Mouse,
+  // Render,
+} from 'matter-js'
+import Render from './Render'
 
 import summaryJSON from '@/data/summary.json'
 import experienceJSON from '@/data/experience.json'
+import technologiesJSON from '@/data/technologies.json'
+import achievementsJSON from '@/data/achievements.json'
+import educationJSON from '@/data/education.json'
 
-import { colors } from '@/constants/colors'
-import {
-  figures,
-  figuresTypes,
-  getFigure,
-} from '@/components/AdvancedViewMode/utils'
+import { figuresTypes, getFigure } from '@/components/AdvancedViewMode/utils'
 
-const data = [...summaryJSON, ...experienceJSON]
+const data = [
+  ...summaryJSON,
+  ...experienceJSON,
+  ...technologiesJSON,
+  ...achievementsJSON,
+  ...educationJSON,
+]
 
 const AdvancedViewMode = () => {
-  const scene = useRef()
+  const scene = useRef<HTMLElement | null>(null)
   const isPressed = useRef(false)
   const engine = useRef(Engine.create())
 
@@ -45,6 +57,21 @@ const AdvancedViewMode = () => {
     Engine.run(engine.current)
     Render.run(render)
 
+    const mouse = Mouse.create(render.canvas)
+    const mouseConstraint = MouseConstraint.create(engine.current, {
+      element: scene.current,
+      constraint: {
+        render: {
+          visible: false,
+        },
+      },
+      mouse: Mouse.create(render.canvas),
+    })
+
+    World.add(engine.current.world, mouseConstraint)
+
+    render.mouse = mouse
+
     return () => {
       Render.stop(render)
       World.clear(engine.current.world, true)
@@ -57,55 +84,57 @@ const AdvancedViewMode = () => {
   }, [])
 
   useEffect(() => {
-    const innerWidth = window.innerWidth
-    const innerHeight = window.innerHeight
+    // const figures = data.map((item) => {
+    //   return getFigure(
+    //     figuresTypes[Math.floor(Math.random() * figuresTypes.length)]
+    //   )
+    // })
 
-    const x = Math.floor(Math.random() * (innerWidth - 1) + 1)
-    const y = Math.floor(Math.random() * (innerHeight - 1) + 1)
-
-    const figures = data.map((item) => {
-      return getFigure(
-        figuresTypes[Math.floor(Math.random() * figuresTypes.length)]
-      )
+    const body = Bodies.circle(10, 10, 50, {
+      restitution: 0.9,
+      render: {
+        fillStyle: 'pink',
+        text: {
+          content: 'Test',
+          color: 'blue',
+          size: 16,
+          family: 'Papyrus',
+        },
+      },
     })
 
+    const figures = [body]
+
     World.add(engine.current.world, figures)
+
+    // const render = () => {
+    //   const elem = document.querySelector('#box')
+    //   if (!elem) return
+    //
+    //   console.log(body.position)
+    //   const { x, y } = body.position
+    //   elem.style.position = 'absolute'
+    //   elem.style.top = `${y}px`
+    //   elem.style.left = `${x}px`
+    //   elem.style.transform = `rotate(${body.angle}rad)`
+    // }
+
+    // const rerender = () => {
+    //   render()
+    //   return requestAnimationFrame(rerender)
+    // }
+    // const id = rerender()
+    //
+    // return () => {
+    //   cancelAnimationFrame(id)
+    // }
   }, [])
 
-  const handleDown = () => {
-    isPressed.current = true
-  }
-
-  const handleUp = () => {
-    isPressed.current = false
-  }
-
-  const handleAddCircle = (e) => {
-    if (isPressed.current) {
-      const ball = Bodies.circle(
-        e.clientX,
-        e.clientY,
-        10 + Math.random() * 30,
-        {
-          mass: 10,
-          restitution: 0.9,
-          friction: 0.005,
-          render: {
-            fillStyle: '#0000ff',
-          },
-        }
-      )
-      World.add(engine.current.world, [ball])
-    }
-  }
-
   return (
-    <div
-      onMouseDown={handleDown}
-      onMouseUp={handleUp}
-      onMouseMove={handleAddCircle}
-      style={{ width: '100vh', height: '100vh' }}
-    >
+    <div style={{ width: '100vh', height: '100vh' }}>
+      {/*<div id="box">*/}
+      {/*  <h1>hello world</h1>*/}
+      {/*</div>*/}
       <div ref={scene} style={{ width: '100%', height: '100%' }} />
     </div>
   )
